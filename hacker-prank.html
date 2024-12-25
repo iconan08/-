@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            background-color: black;
+            color: #00ff00;
+            font-family: monospace;
+            margin: 0;
+            padding: 20px;
+            overflow: hidden;
+        }
+        #matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.1;
+            z-index: -1;
+        }
+        #hack-text {
+            white-space: pre-wrap;
+            font-size: 14px;
+        }
+        .error {
+            color: #ff0000;
+        }
+        .success {
+            color: #00ff00;
+        }
+        .blink {
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+        #warning {
+            color: red;
+            font-size: 24px;
+            text-align: center;
+            margin: 20px;
+            display: none;
+            text-shadow: 0 0 10px red;
+        }
+        .progress-container {
+            margin: 20px 0;
+            display: none;
+        }
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        .progress {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border: 1px solid #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+        }
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #00cc00);
+            transition: width 0.5s;
+        }
+        #system-info {
+            margin-top: 20px;
+            font-size: 12px;
+        }
+        .glitch {
+            animation: glitch 0.5s infinite;
+        }
+        @keyframes glitch {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 2px) }
+            40% { transform: translate(-2px, -2px) }
+            60% { transform: translate(2px, 2px) }
+            80% { transform: translate(2px, -2px) }
+            100% { transform: translate(0) }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-bg"></canvas>
+    <div id="hack-text"></div>
+    <div id="system-info"></div>
+    <div id="warning">⚠️ SYSTEM COMPROMISED ⚠️</div>
+    <div class="progress-container">
+        <div class="progress-label">
+            <span class="task-name">Progress</span>
+            <span class="percentage">0%</span>
+        </div>
+        <div class="progress">
+            <div class="progress-bar"></div>
+        </div>
+    </div>
+
+    <script>
+        // Matrix background
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*";
+        const drops = [];
+        const fontSize = 14;
+        const columns = canvas.width/fontSize;
+        
+        for(let i = 0; i < columns; i++) drops[i] = 1;
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0F0';
+            ctx.font = fontSize + 'px monospace';
+
+            for(let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if(drops[i] * fontSize > canvas.height && Math.random() > 0.975)
+                    drops[i] = 0;
+                drops[i]++;
+            }
+        }
+
+        // System info
+        function getRandomIP() {
+            return Array.from({length: 4}, () => Math.floor(Math.random() * 256)).join('.');
+        }
+
+        const systemInfo = document.getElementById('system-info');
+        systemInfo.innerHTML = `
+            System: ${navigator.platform}
+            Browser: ${navigator.userAgent.split(')')[0] + ')'}
+            IP: ${getRandomIP()}
+            Location: [ENCRYPTED]
+        `.replace(/\n/g, '<br>');
+
+        // Hacking sequence
+        const messages = [
+            "Initializing exploit framework...",
+            "Scanning system vulnerabilities...",
+            "[!] Multiple security flaws detected",
+            "Bypassing firewall... [SUCCESS]",
+            "Injecting payload...",
+            "Establishing remote connection...",
+            "Accessing system files...",
+            "Downloading user data...",
+            "Installing rootkit...",
+            "Encrypting local storage...",
+            "SYSTEM COMPROMISED!"
+        ];
+
+        const failMessages = [
+            "Access denied... Retrying...",
+            "Firewall detected... Bypassing...",
+            "Connection interrupted... Reconnecting..."
+        ];
+
+        let messageIndex = 0;
+        const hackText = document.getElementById('hack-text');
+        const warning = document.getElementById('warning');
+        const progressContainer = document.querySelector('.progress-container');
+        const progressBar = document.querySelector('.progress-bar');
+        const percentage = document.querySelector('.percentage');
+        const taskName = document.querySelector('.task-name');
+
+        function typeWriter(text, index, callback) {
+            if (index < text.length) {
+                hackText.innerHTML += text.charAt(index);
+                setTimeout(() => typeWriter(text, index + 1, callback), 50);
+            } else {
+                callback && callback();
+            }
+        }
+
+        function addFailMessage() {
+            if (Math.random() < 0.3 && messageIndex < messages.length - 1) {
+                const failMessage = failMessages[Math.floor(Math.random() * failMessages.length)];
+                hackText.innerHTML += `<span class="error">\n${failMessage}</span>\n`;
+                setTimeout(continueSequence, 1000);
+            } else {
+                continueSequence();
+            }
+        }
+
+        function continueSequence() {
+            hackText.innerHTML += '\n';
+            messageIndex++;
+            if (messageIndex < messages.length) {
+                setTimeout(startTyping, 500);
+            } else {
+                endSequence();
+            }
+        }
+
+        function startTyping() {
+            const message = messages[messageIndex];
+            taskName.textContent = message.split('...')[0];
+            typeWriter(message, 0, addFailMessage);
+            const progress = ((messageIndex + 1) * 100 / messages.length).toFixed(1);
+            progressBar.style.width = `${progress}%`;
+            percentage.textContent = `${progress}%`;
+        }
+
+        function endSequence() {
+            warning.style.display = 'block';
+            warning.classList.add('blink', 'glitch');
+            document.body.classList.add('glitch');
+            setTimeout(() => {
+                alert("Gotcha! Just a prank - your system is safe! 😄");
+                location.reload();
+            }, 3000);
+        }
+
+        // Start everything
+        setInterval(drawMatrix, 50);
+        progressContainer.style.display = 'block';
+        startTyping();
+    </script>
+</body>
+</html>
